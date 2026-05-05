@@ -113,7 +113,8 @@ jobs:
         working-directory: multiStructure/frameworks/csharp-playwright
         run: |
           mkdir -p allure-results
-          [ -d "allure-results" ] && echo "Allure results directory ready"
+          echo "Allure results directory created"
+          ls -la allure-results/ 2>/dev/null || echo "No allure results generated"
 
       - name: Upload JS Allure Results
         uses: actions/upload-artifact@v4
@@ -132,6 +133,7 @@ jobs:
       - name: Upload C# Allure Results
         uses: actions/upload-artifact@v4
         if: always()
+        continue-on-error: true
         with:
           name: csharp-allure-results
           path: multiStructure/frameworks/csharp-playwright/allure-results/
@@ -188,6 +190,7 @@ jobs:
 
       - name: Download C# Allure Results
         uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           name: csharp-allure-results
           path: allure-results-csharp

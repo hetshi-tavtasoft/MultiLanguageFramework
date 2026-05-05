@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Playwright;
 using NUnit.Framework;
+using Allure.NUnit;
+using Allure.Net.Commons;
 using PlaywrightFramework.Fixtures;
 using PlaywrightFramework.Pages;
 using PlaywrightFramework.Utils;
@@ -9,6 +11,7 @@ using PlaywrightFramework.Utils.DataFactory;
 
 namespace PlaywrightFramework.Tests;
 
+[AllureNUnit]
 public class ProgramTests
 {
     private IPlaywright? _playwright;
@@ -39,6 +42,7 @@ public class ProgramTests
     }
 
     [Test]
+    [AllureStory("Login")]
     public async Task NavigateAndVerifySwagLabsDashboard()
     {
         var loginPage = new LoginPage(_page!);
@@ -48,6 +52,7 @@ public class ProgramTests
     }
 
     [Test]
+    [AllureStory("Login")]
     public async Task LoginToSwagLabsWithValidCredentials()
     {
         var loginPage = new LoginPage(_page!);
@@ -61,6 +66,7 @@ public class ProgramTests
     }
 
     [Test]
+    [AllureStory("Shopping")]
     public async Task AddCheapestProductToCart()
     {
         var loginPage = new LoginPage(_page!);
@@ -76,6 +82,7 @@ public class ProgramTests
     }
 
     [Test]
+    [AllureStory("Shopping")]
     public async Task VerifyCartContainsCheapestProduct()
     {
         var loginPage = new LoginPage(_page!);
@@ -94,6 +101,7 @@ public class ProgramTests
     }
 
     [Test]
+    [AllureStory("Checkout")]
     public async Task CompleteCheckoutFlow()
     {
         var loginPage = new LoginPage(_page!);
