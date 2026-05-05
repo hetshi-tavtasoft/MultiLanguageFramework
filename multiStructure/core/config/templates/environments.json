@@ -1,0 +1,33 @@
+{
+  "environments": {
+    "qa": {
+      "baseUrl": "https://qa.example.com",
+      "apiBaseUrl": "https://api.qa.example.com",
+      "headless": true,
+      "timeout": 30000
+    },
+    "uat": {
+      "baseUrl": "https://uat.example.com",
+      "apiBaseUrl": "https://api.uat.example.com",
+      "headless": true,
+      "timeout": 30000
+    },
+    "staging": {
+      "baseUrl": "https://staging.example.com",
+      "apiBaseUrl": "https://api.staging.example.com",
+      "headless": true,
+      "timeout": 30000
+    },
+    "production": {
+      "baseUrl": "https://example.com",
+      "apiBaseUrl": "https://api.example.com",
+      "headless": true,
+      "timeout": 30000
+    }
+  },
+  "browsers": ["chromium", "firefox", "webkit"],
+  "defaultBrowser": "chromium",
+  "retries": 2,
+  "screenshot": "only-on-failure",
+  "video": "retain-on-failure"
+}

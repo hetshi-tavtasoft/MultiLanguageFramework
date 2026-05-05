@@ -1,0 +1,21 @@
+{
+  "name": "js-playwright",
+  "version": "1.0.0",
+  "description": "JavaScript Playwright Automation Framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:qa": "ENV=qa npx playwright test",
+    "test:uat": "ENV=uat npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "report": "npx playwright show-report"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "dotenv": "^17.4.2"
+  }
+}

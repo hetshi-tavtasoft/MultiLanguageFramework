@@ -1,0 +1,27 @@
+{
+  "admin": {
+    "username": "admin",
+    "password": "admin123",
+    "email": "admin@example.com",
+    "role": "administrator"
+  },
+  "standardUser": {
+    "username": "testuser",
+    "password": "Test@1234",
+    "email": "user@example.com",
+    "role": "user"
+  },
+  "readOnlyUser": {
+    "username": "viewer",
+    "password": "View@1234",
+    "email": "viewer@example.com",
+    "role": "viewer"
+  },
+  "disabledUser": {
+    "username": "disabled",
+    "password": "Disabled@1234",
+    "email": "disabled@example.com",
+    "role": "user",
+    "isActive": false
+  }
+}

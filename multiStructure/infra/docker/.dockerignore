@@ -1,0 +1,16 @@
+node_modules/
+bin/
+obj/
+playwright-report/
+test-results/
+TestResults/
+reports/
+.git/
+.github/
+.vs/
+*.suo
+*.user
+.env.*
+*.md
+Dockerfile
+docker-compose.yml

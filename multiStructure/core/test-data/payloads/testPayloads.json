@@ -1,0 +1,49 @@
+{
+  "login": {
+    "valid": {
+      "username": "admin",
+      "password": "admin123"
+    },
+    "invalid": {
+      "username": "invalid",
+      "password": "wrong"
+    }
+  },
+  "registration": {
+    "valid": {
+      "username": "newuser",
+      "email": "newuser@example.com",
+      "password": "NewUser@1234",
+      "confirmPassword": "NewUser@1234"
+    },
+    "mismatchedPasswords": {
+      "username": "newuser",
+      "email": "newuser@example.com",
+      "password": "NewUser@1234",
+      "confirmPassword": "Different@5678"
+    },
+    "weakPassword": {
+      "username": "newuser",
+      "email": "newuser@example.com",
+      "password": "123",
+      "confirmPassword": "123"
+    }
+  },
+  "api": {
+    "createUser": {
+      "username": "apiuser",
+      "email": "apiuser@example.com",
+      "role": "user"
+    },
+    "updateUser": {
+      "email": "updated@example.com",
+      "role": "admin"
+    }
+  },
+  "search": {
+    "valid": ["Laptop", "Mouse", "Keyboard"],
+    "empty": "",
+    "specialChars": "@#$%^&*()",
+    "sqlInjection": "' OR 1=1 --"
+  }
+}

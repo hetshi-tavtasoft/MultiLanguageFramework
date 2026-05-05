@@ -1,0 +1,106 @@
+name: Run All Frameworks
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'qa'
+        type: choice
+        options:
+          - qa
+          - uat
+      frameworks:
+        description: 'Frameworks to run (comma-separated: ts,js,csharp)'
+        required: true
+        default: 'ts,js,csharp'
+        type: string
+
+jobs:
+  ts-playwright:
+    if: ${{ !github.event.inputs || contains(github.event.inputs.frameworks, 'ts') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      ENV: ${{ github.event.inputs.environment || 'qa' }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      working-directory: frameworks/ts-playwright
+      run: npm ci
+    - name: Install Playwright Browsers
+      working-directory: frameworks/ts-playwright
+      run: npx playwright install --with-deps
+    - name: Run Playwright tests
+      working-directory: frameworks/ts-playwright
+      run: npx playwright test
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report-ts
+        path: frameworks/ts-playwright/playwright-report/
+        retention-days: 30
+
+  js-playwright:
+    if: ${{ !github.event.inputs || contains(github.event.inputs.frameworks, 'js') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      ENV: ${{ github.event.inputs.environment || 'qa' }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      working-directory: frameworks/js-playwright
+      run: npm ci
+    - name: Install Playwright Browsers
+      working-directory: frameworks/js-playwright
+      run: npx playwright install --with-deps
+    - name: Run Playwright tests
+      working-directory: frameworks/js-playwright
+      run: npm test
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report-js
+        path: frameworks/js-playwright/playwright-report/
+        retention-days: 30
+
+  csharp-playwright:
+    if: ${{ !github.event.inputs || contains(github.event.inputs.frameworks, 'csharp') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      ENV: ${{ github.event.inputs.environment || 'qa' }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    - name: Restore dependencies
+      working-directory: frameworks/csharp-playwright
+      run: dotnet restore
+    - name: Install Playwright Browsers
+      working-directory: frameworks/csharp-playwright
+      run: pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
+    - name: Build
+      working-directory: frameworks/csharp-playwright
+      run: dotnet build --no-restore
+    - name: Run Playwright tests
+      working-directory: frameworks/csharp-playwright
+      run: dotnet test --no-build --verbosity normal
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report-csharp
+        path: frameworks/csharp-playwright/TestResults/
+        retention-days: 30

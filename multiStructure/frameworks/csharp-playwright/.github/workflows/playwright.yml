@@ -1,0 +1,29 @@
+name: Playwright Tests
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Install Playwright Browsers
+      run: pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Run Playwright tests
+      run: dotnet test --no-build --verbosity normal
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30

@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  ts-playwright:
+    build:
+      context: ../..
+      dockerfile: infra/docker/ts-playwright/Dockerfile
+    image: playwright-ts:latest
+    container_name: playwright-ts-tests
+    environment:
+      - ENV=${ENV:-qa}
+      - BASE_URL=${BASE_URL:-}
+      - CI=1
+    volumes:
+      - ../../frameworks/ts-playwright/playwright-report:/app/playwright-report
+      - ../../frameworks/ts-playwright/test-results:/app/test-results
+    networks:
+      - playwright-network
+
+  js-playwright:
+    build:
+      context: ../..
+      dockerfile: infra/docker/js-playwright/Dockerfile
+    image: playwright-js:latest
+    container_name: playwright-js-tests
+    environment:
+      - ENV=${ENV:-qa}
+      - BASE_URL=${BASE_URL:-}
+      - CI=1
+    volumes:
+      - ../../frameworks/js-playwright/playwright-report:/app/playwright-report
+      - ../../frameworks/js-playwright/test-results:/app/test-results
+    networks:
+      - playwright-network
+
+  csharp-playwright:
+    build:
+      context: ../..
+      dockerfile: infra/docker/csharp-playwright/Dockerfile
+    image: playwright-csharp:latest
+    container_name: playwright-csharp-tests
+    environment:
+      - ENV=${ENV:-qa}
+      - BASE_URL=${BASE_URL:-}
+      - CI=1
+    volumes:
+      - ../../frameworks/csharp-playwright/TestResults:/app/TestResults
+    networks:
+      - playwright-network
+
+networks:
+  playwright-network:
+    driver: bridge

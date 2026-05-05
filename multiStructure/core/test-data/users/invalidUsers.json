@@ -1,0 +1,40 @@
+{
+  "invalidCredentials": [
+    {
+      "username": "admin",
+      "password": "wrongpassword",
+      "expectedError": "Invalid username or password"
+    },
+    {
+      "username": "nonexistent",
+      "password": "password123",
+      "expectedError": "Invalid username or password"
+    },
+    {
+      "username": "",
+      "password": "password123",
+      "expectedError": "Username is required"
+    },
+    {
+      "username": "admin",
+      "password": "",
+      "expectedError": "Password is required"
+    }
+  ],
+  "sqlInjectionAttempts": [
+    {
+      "username": "' OR 1=1 --",
+      "password": "password"
+    },
+    {
+      "username": "admin'; DROP TABLE users; --",
+      "password": "password"
+    }
+  ],
+  "xssAttempts": [
+    {
+      "username": "<script>alert('xss')</script>",
+      "password": "password"
+    }
+  ]
+}
