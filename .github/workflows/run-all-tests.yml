@@ -16,13 +16,7 @@ on:
           - qa
           - uat
           - prod
-      browser:
-        description: 'Browser to run tests on'
-        required: false
-        default: 'chromium'
-        type: choice
-        options:
-          - chromium
+
 env:
   ENV: ${{ github.event.inputs.environment || 'qa' }}
 
@@ -30,10 +24,6 @@ jobs:
   run-all:
     name: Run All Framework Tests
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        browser: ${{ fromJSON(github.event.inputs.browser == 'all' && '["chromium"]' || format('["{0}"]', github.event.inputs.browser || 'chromium')) }}
     
     steps:
       - name: Checkout
@@ -62,11 +52,11 @@ jobs:
 
       - name: Install Playwright Browsers (JS)
         working-directory: multiStructure/frameworks/js-playwright
-        run: npx playwright install --with-deps ${{ matrix.browser }}
+        run: npx playwright install --with-deps chromium
 
       - name: Install Playwright Browsers (TS)
         working-directory: multiStructure/frameworks/ts-playwright
-        run: npx playwright install --with-deps ${{ matrix.browser }}
+        run: npx playwright install --with-deps chromium
 
       - name: Restore .NET Dependencies
         working-directory: multiStructure/frameworks/csharp-playwright
@@ -78,11 +68,11 @@ jobs:
 
       - name: Install Playwright (C#)
         working-directory: multiStructure/frameworks/csharp-playwright
-        run: pwsh bin/Debug/net8.0/playwright.ps1 install ${{ matrix.browser }}
+        run: pwsh bin/Debug/net8.0/playwright.ps1 install chromium
 
       - name: Run JS Tests
         working-directory: multiStructure/frameworks/js-playwright
-        run: npx playwright test
+        run: npx playwright test --project=chromium
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
           USERNAME: ${{ secrets.USERNAME }}
@@ -90,7 +80,7 @@ jobs:
 
       - name: Run TS Tests
         working-directory: multiStructure/frameworks/ts-playwright
-        run: npx playwright test
+        run: npx playwright test --project=chromium
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
           USERNAME: ${{ secrets.USERNAME }}
@@ -98,7 +88,7 @@ jobs:
 
       - name: Run C# Tests
         working-directory: multiStructure/frameworks/csharp-playwright
-        run: dotnet test --filter "BrowserName=${{ matrix.browser }}"
+        run: dotnet test --filter "BrowserName=chromium"
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
           USERNAME: ${{ secrets.USERNAME }}
@@ -129,42 +119,42 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: js-allure-results-${{ matrix.browser }}
+          name: js-allure-results
           path: multiStructure/frameworks/js-playwright/allure-results/
 
       - name: Upload TS Allure Results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ts-allure-results-${{ matrix.browser }}
+          name: ts-allure-results
           path: multiStructure/frameworks/ts-playwright/allure-results/
 
       - name: Upload C# Allure Results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: csharp-allure-results-${{ matrix.browser }}
+          name: csharp-allure-results
           path: multiStructure/frameworks/csharp-playwright/allure-results/
 
       - name: Upload JS Report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: js-playwright-report-${{ matrix.browser }}
+          name: js-playwright-report
           path: multiStructure/frameworks/js-playwright/playwright-report/
 
       - name: Upload TS Report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ts-playwright-report-${{ matrix.browser }}
+          name: ts-playwright-report
           path: multiStructure/frameworks/ts-playwright/playwright-report/
 
       - name: Upload C# Report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: csharp-test-results-${{ matrix.browser }}
+          name: csharp-test-results
           path: multiStructure/frameworks/csharp-playwright/TestResults/
 
   allure-report:
@@ -187,23 +177,20 @@ jobs:
       - name: Download JS Allure Results
         uses: actions/download-artifact@v4
         with:
-          pattern: js-allure-results-*
+          name: js-allure-results
           path: allure-results-js
-          merge-multiple: true
 
       - name: Download TS Allure Results
         uses: actions/download-artifact@v4
         with:
-          pattern: ts-allure-results-*
+          name: ts-allure-results
           path: allure-results-ts
-          merge-multiple: true
 
       - name: Download C# Allure Results
         uses: actions/download-artifact@v4
         with:
-          pattern: csharp-allure-results-*
+          name: csharp-allure-results
           path: allure-results-csharp
-          merge-multiple: true
 
       - name: Combine All Allure Results
         run: |
@@ -229,7 +216,7 @@ jobs:
     steps:
       - name: Success Notification
         if: ${{ success() }}
-        run: echo "✅ All Playwright tests passed! Allure report generated."
+        run: echo "✅ All Playwright tests passed on Chromium! Allure report generated."
 
       - name: Failure Notification
         if: ${{ failure() }}
