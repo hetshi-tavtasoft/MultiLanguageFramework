@@ -23,10 +23,6 @@ on:
         type: choice
         options:
           - chromium
-          - firefox
-          - webkit
-          - all
-
 env:
   ENV: ${{ github.event.inputs.environment || 'qa' }}
 
