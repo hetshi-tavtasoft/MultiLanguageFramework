@@ -1,0 +1,172 @@
+name: Playwright Multi-Framework CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment (qa/uat/prod)'
+        required: true
+        default: 'qa'
+        type: choice
+        options:
+          - qa
+          - uat
+          - prod
+
+env:
+  ENV: ${{ github.event.inputs.environment || 'qa' }}
+
+jobs:
+  ts-tests:
+    name: TS Playwright Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+
+    defaults:
+      run:
+        working-directory: multiStructure/frameworks/ts-playwright
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Install Allure Reporter (Optional)
+        run: npm install -D allure-playwright
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Run Tests
+        run: npx playwright test --project=${{ matrix.browser }}
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ts-report-${{ matrix.browser }}
+          path: multiStructure/frameworks/ts-playwright/playwright-report/
+
+      - name: Notify on Failure
+        if: failure()
+        run: echo "❌ TS Playwright tests failed for ${{ matrix.browser }} in ${{ env.ENV }} environment"
+
+  js-tests:
+    name: JS Playwright Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+
+    defaults:
+      run:
+        working-directory: multiStructure/frameworks/js-playwright
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - run: npm ci
+
+      - name: Install Allure Reporter (Optional)
+        run: npm install -D allure-playwright
+
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npx playwright test --project=${{ matrix.browser }}
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: js-report-${{ matrix.browser }}
+          path: multiStructure/frameworks/js-playwright/playwright-report/
+
+      - name: Notify on Failure
+        if: failure()
+        run: echo "❌ JS Playwright tests failed for ${{ matrix.browser }} in ${{ env.ENV }} environment"
+
+  csharp-tests:
+    name: C# Playwright Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+
+    defaults:
+      run:
+        working-directory: multiStructure/frameworks/csharp-playwright
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build
+
+      - name: Install Playwright
+        run: |
+          pwsh bin/Debug/net8.0/playwright.ps1 install ${{ matrix.browser }}
+
+      - name: Run Tests
+        run: dotnet test --filter "BrowserName=${{ matrix.browser }}"
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: csharp-report-${{ matrix.browser }}
+          path: multiStructure/frameworks/csharp-playwright/TestResults/
+
+      - name: Notify on Failure
+        if: failure()
+        run: echo "❌ C# Playwright tests failed for ${{ matrix.browser }} in ${{ env.ENV }} environment"
+
+  notify:
+    name: Notify Team
+    needs: [ts-tests, js-tests, csharp-tests]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Success Notification
+        if: ${{ success() }}
+        run: echo "✅ All Playwright tests passed in ${{ env.ENV }} environment!"
+
+      - name: Failure Notification
+        if: ${{ failure() }}
+        run: echo "❌ Some Playwright tests failed. Check artifacts for details."

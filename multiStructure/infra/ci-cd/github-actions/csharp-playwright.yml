@@ -1,62 +1,42 @@
 name: C# Playwright Tests
 on:
   push:
-    branches: [ main, master ]
-    paths:
-      - 'frameworks/csharp-playwright/**'
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
-    paths:
-      - 'frameworks/csharp-playwright/**'
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Target environment'
-        required: true
-        default: 'qa'
-        type: choice
-        options:
-          - qa
-          - uat
+    branches: [ main ]
 
 jobs:
-  test:
+  csharp-tests:
+    name: C# Playwright Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-    env:
-      ENV: ${{ github.event.inputs.environment || 'qa' }}
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
-    strategy:
-      fail-fast: false
-      matrix:
-        browser: [chromium, firefox, webkit]
+
+    defaults:
+      run:
+        working-directory: frameworks/csharp-playwright/PlaywrightCSharp
+
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
-    - name: Cache NuGet packages
-      uses: actions/cache@v4
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/csharp-playwright.csproj') }}
-        restore-keys: |
-          ${{ runner.os }}-nuget-
-    - name: Restore dependencies
-      working-directory: frameworks/csharp-playwright
-      run: dotnet restore
-    - name: Install Playwright Browsers
-      working-directory: frameworks/csharp-playwright
-      run: pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
-    - name: Build
-      working-directory: frameworks/csharp-playwright
-      run: dotnet build --no-restore --configuration Release
-    - name: Run Playwright tests
-      working-directory: frameworks/csharp-playwright
-      run: dotnet test --no-build --configuration Release --verbosity normal --filter "BrowserName=${{ matrix.browser }}"
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report-csharp-${{ matrix.browser }}
-        path: frameworks/csharp-playwright/TestResults/
-        retention-days: 30
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build
+
+      - name: Install Playwright
+        run: |
+          pwsh bin/Debug/net8.0/playwright.ps1 install
+
+      - name: Run Tests
+        run: dotnet test
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: csharp-report
+          path: frameworks/csharp-playwright/PlaywrightCSharp/TestResults/

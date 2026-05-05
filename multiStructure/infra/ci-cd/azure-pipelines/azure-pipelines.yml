@@ -2,108 +2,96 @@ trigger:
   branches:
     include:
       - main
-      - master
+
+pr:
+  branches:
+    include:
+      - main
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  ENV: 'qa'
-  NODE_VERSION: '20.x'
+  NODE_VERSION: '18.x'
   DOTNET_VERSION: '8.x'
 
-stages:
-  - stage: TypeScriptTests
-    displayName: 'TypeScript Playwright Tests'
-    jobs:
-    - job: TSTests
-      displayName: 'Run TS Playwright Tests'
-      steps:
-      - task: NodeTool@0
-        inputs:
-          versionSpec: '$(NODE_VERSION)'
-        displayName: 'Install Node.js'
+jobs:
+  - job: TSTests
+    displayName: 'TS Playwright Tests'
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '$(NODE_VERSION)'
+      displayName: 'Setup Node'
 
-      - script: |
-          cd frameworks/ts-playwright
-          npm ci
-          npx playwright install --with-deps
-        displayName: 'Install dependencies'
+    - script: |
+        cd frameworks/ts-playwright
+        npm ci
+        npx playwright install --with-deps
+      displayName: 'Install Dependencies'
 
-      - script: |
-          cd frameworks/ts-playwright
-          npx playwright test
-        displayName: 'Run Playwright tests'
-        env:
-          ENV: $(ENV)
+    - script: |
+        cd frameworks/ts-playwright
+        npx playwright test
+      displayName: 'Run Tests'
 
-      - task: PublishBuildArtifacts@1
-        condition: always()
-        inputs:
-          pathToPublish: 'frameworks/ts-playwright/playwright-report'
-          artifactName: 'playwright-report-ts'
+    - task: PublishBuildArtifacts@1
+      condition: always()
+      inputs:
+        pathToPublish: 'frameworks/ts-playwright/playwright-report'
+        artifactName: 'ts-report'
 
-  - stage: JavaScriptTests
-    displayName: 'JavaScript Playwright Tests'
-    jobs:
-    - job: JSTests
-      displayName: 'Run JS Playwright Tests'
-      steps:
-      - task: NodeTool@0
-        inputs:
-          versionSpec: '$(NODE_VERSION)'
-        displayName: 'Install Node.js'
+  - job: JSTests
+    displayName: 'JS Playwright Tests'
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '$(NODE_VERSION)'
+      displayName: 'Setup Node'
 
-      - script: |
-          cd frameworks/js-playwright
-          npm ci
-          npx playwright install --with-deps
-        displayName: 'Install dependencies'
+    - script: |
+        cd frameworks/js-playwright
+        npm ci
+        npx playwright install --with-deps
+      displayName: 'Install Dependencies'
 
-      - script: |
-          cd frameworks/js-playwright
-          npm test
-        displayName: 'Run Playwright tests'
-        env:
-          ENV: $(ENV)
+    - script: |
+        cd frameworks/js-playwright
+        npx playwright test
+      displayName: 'Run Tests'
 
-      - task: PublishBuildArtifacts@1
-        condition: always()
-        inputs:
-          pathToPublish: 'frameworks/js-playwright/playwright-report'
-          artifactName: 'playwright-report-js'
+    - task: PublishBuildArtifacts@1
+      condition: always()
+      inputs:
+        pathToPublish: 'frameworks/js-playwright/playwright-report'
+        artifactName: 'js-report'
 
-  - stage: CSharpTests
+  - job: CSharpTests
     displayName: 'C# Playwright Tests'
-    jobs:
-    - job: CSharpTests
-      displayName: 'Run C# Playwright Tests'
-      steps:
-      - task: UseDotNet@2
-        inputs:
-          version: '$(DOTNET_VERSION)'
-        displayName: 'Install .NET SDK'
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        version: '$(DOTNET_VERSION)'
+      displayName: 'Setup .NET'
 
-      - script: |
-          cd frameworks/csharp-playwright
-          dotnet restore
-        displayName: 'Restore NuGet packages'
+    - script: |
+        cd frameworks/csharp-playwright/PlaywrightCSharp
+        dotnet restore
+        dotnet build
+      displayName: 'Restore and Build'
 
-      - script: |
-          cd frameworks/csharp-playwright
-          pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
-          dotnet build --no-restore
-        displayName: 'Install browsers and build'
+    - script: |
+        cd frameworks/csharp-playwright/PlaywrightCSharp
+        pwsh bin/Debug/net8.0/playwright.ps1 install
+      displayName: 'Install Playwright'
 
-      - script: |
-          cd frameworks/csharp-playwright
-          dotnet test --no-build --verbosity normal
-        displayName: 'Run Playwright tests'
-        env:
-          ENV: $(ENV)
+    - script: |
+        cd frameworks/csharp-playwright/PlaywrightCSharp
+        dotnet test
+      displayName: 'Run Tests'
 
-      - task: PublishBuildArtifacts@1
-        condition: always()
-        inputs:
-          pathToPublish: 'frameworks/csharp-playwright/TestResults'
-          artifactName: 'playwright-report-csharp'
+    - task: PublishBuildArtifacts@1
+      condition: always()
+      inputs:
+        pathToPublish: 'frameworks/csharp-playwright/PlaywrightCSharp/TestResults'
+        artifactName: 'csharp-report'

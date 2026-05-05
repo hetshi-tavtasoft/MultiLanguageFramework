@@ -1,0 +1,11 @@
+{
+  "playwright.config": "multiStructure/frameworks/js-playwright/config/playwright.config.js",
+  "playwright.env": {
+    "JS_PLAYWRIGHT": {
+      "PLAYWRIGHT_CONFIG": "multiStructure/frameworks/js-playwright/config/playwright.config.js"
+    },
+    "TS_PLAYWRIGHT": {
+      "PLAYWRIGHT_CONFIG": "multiStructure/frameworks/ts-playwright/config/playwright.config.ts"
+    }
+  }
+}

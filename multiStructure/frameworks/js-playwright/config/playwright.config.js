@@ -8,6 +8,7 @@ module.exports = {
   testDir: '../tests',
   timeout: 30000,
   retries: 2,
+  reporter: [['list']],
   use: {
     baseURL: process.env.BASE_URL,
     headless: true,

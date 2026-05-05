@@ -1,0 +1,33 @@
+const { defineConfig } = require('@playwright/test');
+
+module.exports = defineConfig({
+  testDir: './tests',
+  timeout: 30000,
+  retries: 1,
+  use: {
+    baseURL: process.env.BASE_URL || 'https://www.saucedemo.com',
+    headless: process.env.HEADED ? false : true,
+  },
+  reporter: [
+    ['list'],
+    ['allure-playwright', {
+      resultsDir: 'allure-results',
+      detail: true,
+      suiteTitle: false,
+    }]
+  ],
+  projects: [
+    {
+      name: 'chromium',
+      use: { browserName: 'chromium' },
+    },
+    {
+      name: 'firefox',
+      use: { browserName: 'firefox' },
+    },
+    {
+      name: 'webkit',
+      use: { browserName: 'webkit' },
+    },
+  ],
+});

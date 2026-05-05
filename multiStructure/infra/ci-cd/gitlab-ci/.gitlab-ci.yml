@@ -1,141 +1,66 @@
 stages:
-  - install
   - test
-  - report
 
 variables:
-  ENV: "qa"
-  NODE_VERSION: "20"
+  NODE_VERSION: "18"
   DOTNET_VERSION: "8.0"
 
-.npm_cache:
-  cache:
-    key:
-      files:
-        - frameworks/ts-playwright/package-lock.json
-        - frameworks/js-playwright/package-lock.json
-    paths:
-      - .npm/
+cache:
+  key:
+    files:
+      - frameworks/ts-playwright/package-lock.json
+      - frameworks/js-playwright/package-lock.json
+  paths:
+    - .npm/
 
-.nuget_cache:
-  cache:
-    key:
-      files:
-        - frameworks/csharp-playwright/csharp-playwright.csproj
-    paths:
-      - ~/.nuget/packages
-
-install-ts-deps:
-  stage: install
-  image: node:${NODE_VERSION}
-  script:
-    - cd frameworks/ts-playwright
-    - npm ci --cache .npm
-  artifacts:
-    paths:
-      - frameworks/ts-playwright/node_modules/
-    expire_in: 1 hour
-  rules:
-    - changes:
-        - frameworks/ts-playwright/**
-    - when: manual
-
-install-js-deps:
-  stage: install
-  image: node:${NODE_VERSION}
-  script:
-    - cd frameworks/js-playwright
-    - npm ci --cache .npm
-  artifacts:
-    paths:
-      - frameworks/js-playwright/node_modules/
-    expire_in: 1 hour
-  rules:
-    - changes:
-        - frameworks/js-playwright/**
-    - when: manual
-
-install-csharp-deps:
-  stage: install
-  image: mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION}
-  script:
-    - cd frameworks/csharp-playwright
-    - dotnet restore
-  artifacts:
-    paths:
-      - frameworks/csharp-playwright/obj/
-    expire_in: 1 hour
-  rules:
-    - changes:
-        - frameworks/csharp-playwright/**
-    - when: manual
-
-test-ts-playwright:
+ts-tests:
   stage: test
   image: mcr.microsoft.com/playwright:v1.59.0-jammy
-  needs:
-    - install-ts-deps
   script:
     - cd frameworks/ts-playwright
+    - npm ci
+    - npx playwright install --with-deps
     - npx playwright test
   artifacts:
     when: always
     paths:
       - frameworks/ts-playwright/playwright-report/
-      - frameworks/ts-playwright/test-results/
     expire_in: 30 days
   rules:
-    - changes:
-        - frameworks/ts-playwright/**
-    - when: manual
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
 
-test-js-playwright:
+js-tests:
   stage: test
   image: mcr.microsoft.com/playwright:v1.59.0-jammy
-  needs:
-    - install-js-deps
   script:
     - cd frameworks/js-playwright
-    - npm test
+    - npm ci
+    - npx playwright install --with-deps
+    - npx playwright test
   artifacts:
     when: always
     paths:
       - frameworks/js-playwright/playwright-report/
-      - frameworks/js-playwright/test-results/
     expire_in: 30 days
   rules:
-    - changes:
-        - frameworks/js-playwright/**
-    - when: manual
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
 
-test-csharp-playwright:
+csharp-tests:
   stage: test
   image: mcr.microsoft.com/playwright:v1.59.0-jammy
-  needs:
-    - install-csharp-deps
   script:
-    - cd frameworks/csharp-playwright
-    - dotnet build --no-restore
-    - dotnet test --no-build --verbosity normal
+    - cd frameworks/csharp-playwright/PlaywrightCSharp
+    - dotnet restore
+    - dotnet build
+    - pwsh bin/Debug/net8.0/playwright.ps1 install
+    - dotnet test
   artifacts:
     when: always
     paths:
-      - frameworks/csharp-playwright/TestResults/
+      - frameworks/csharp-playwright/PlaywrightCSharp/TestResults/
     expire_in: 30 days
   rules:
-    - changes:
-        - frameworks/csharp-playwright/**
-    - when: manual
-
-report:
-  stage: report
-  image: node:${NODE_VERSION}
-  needs:
-    - test-ts-playwright
-    - test-js-playwright
-  script:
-    - echo "All test reports uploaded as artifacts"
-    - echo "View reports in GitLab CI/CD artifacts"
-  when: always
-  rules:
-    - when: always
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'

@@ -1,0 +1,18 @@
+{
+  "folders": [
+    {
+      "name": "JS Playwright",
+      "path": "multiStructure/frameworks/js-playwright"
+    },
+    {
+      "name": "TS Playwright",
+      "path": "multiStructure/frameworks/ts-playwright"
+    }
+  ],
+  "settings": {
+    "playwright.config": "config/playwright.config.js"
+  },
+  "extensions": {
+    "recommendations": ["ms-playwright.playwright"]
+  }
+}

@@ -1,11 +1,12 @@
-import { test, expect } from '../fixtures/pageFixtures';
-import { testData } from '../utils/testData/testData';
-import { constantData } from '../fixtures/constant';
-import { userData } from '../utils/dataFactory/userData';
+const { expect } = require('@playwright/test');
+const { testData } = require('../utils/testData/testData');
+const { constantData } = require('../fixtures/constant');
+const { userData } = require('../utils/dataFactory/userData');
+const { test: fixtureTest } = require('../fixtures/pageObjects');
 
-test.describe('e2e Flow', () => {
+fixtureTest.describe('e2e Flow', () => {
 
-  test('Completed e2e flow which contains login to order shipped', async ({ loginPage, productPage, yourCartPage, checkoutInformationPage, checkoutOverviewPage, checkoutCompletePage }) => {
+  fixtureTest('Completed e2e flow which contains login to order shipped', async ({ loginPage, productPage, yourCartPage, checkoutInformationPage, checkoutOverviewPage, checkoutCompletePage }) => {
 
     console.log("Navigate and Verify that user is navigated to Swag labs dashboard");
     await loginPage.navigate();
@@ -24,7 +25,7 @@ test.describe('e2e Flow', () => {
 
     console.log("Click on sorting container and click on High to low priority button and Add the cheapest product in cart");
     await productPage.clickOnSortingContainer();
-    await productPage.selectSortingOption(constantData.data.sortHighToLowOption);
+    await productPage.selectSortingOption(constantData.data.sortHighToLowOption)
     const cheapestPrice = await productPage.getPriceAndClickOnAddToCartButton();
 
     console.log('Click on Cart container and verify that user is navigated to Your Cart page');
@@ -32,7 +33,7 @@ test.describe('e2e Flow', () => {
     const yourCartTitle = await yourCartPage.getTitleText();
     await expect(yourCartTitle).toContain(constantData.data.yourCartTitle);
 
-    console.log('Get cart price and verify that cheapest prise is added');
+    console.log('Get cart price and verify that cheapest prise is added')
     const cartPrice = await yourCartPage.getPrice();
     await expect(cheapestPrice).toEqual(cartPrice);
 
@@ -48,7 +49,7 @@ test.describe('e2e Flow', () => {
     await expect(checkoutOverviewTitle).toContain(constantData.data.checkoutOverviewTitle);
 
     console.log('Verify product details and click on Finish button');
-    const currentProductPrice = await checkoutOverviewPage.getProductPrice();
+    const currentProductPrice= await checkoutOverviewPage.getProductPrice();
     await expect(cheapestPrice).toEqual(currentProductPrice);
     await checkoutOverviewPage.clickOnFinishButton();
 
