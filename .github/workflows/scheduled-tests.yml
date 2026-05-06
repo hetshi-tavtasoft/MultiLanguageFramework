@@ -1,0 +1,238 @@
+name: Scheduled & Tag-Based Test Runs
+
+on:
+  schedule:
+    # Smoke tests - every 15 minutes
+    - cron: "*/15 * * * *"
+      env:
+        TAG: "smoke"
+        ENV: "qa"
+    
+    # Critical tests - every hour
+    - cron: "0 * * * *"
+      env:
+        TAG: "critical"
+        ENV: "qa"
+    
+    # Regression - daily at 2 AM
+    - cron: "0 2 * * *"
+      env:
+        TAG: "regression"
+        ENV: "qa"
+  
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Test tag to run (smoke/regression/critical)"
+        required: true
+        default: "smoke"
+        type: choice
+        options:
+          - smoke
+          - regression
+          - critical
+      
+      environment:
+        description: "Target environment"
+        required: true
+        default: "qa"
+        type: choice
+        options:
+          - qa
+          - uat
+          - prod
+      
+      framework:
+        description: "Framework to run (all/ts/js/csharp)"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - ts
+          - js
+          - csharp
+
+env:
+  TAG: ${{ github.event.inputs.tag || env.TAG || 'smoke' }}
+  ENV: ${{ github.event.inputs.environment || env.ENV || 'qa' }}
+
+jobs:
+  parse-runner:
+    name: Parse Runner Config
+    runs-on: ubuntu-latest
+    outputs:
+      ts-files: ${{ steps.parse.outputs.ts-files }}
+      js-files: ${{ steps.parse.outputs.js-files }}
+      csharp-files: ${{ steps.parse.outputs.csharp-files }}
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Parse test-runner.yml for tag
+        id: parse
+        run: |
+          TAG="${{ env.TAG }}"
+          echo "Looking for tests with tag: $TAG"
+          
+          # Extract test files for each framework based on tag
+          # Using yq or manual parsing
+          TS_FILES=""
+          JS_FILES=""
+          CSHARP_FILES=""
+          
+          # Read test-runner.yml and filter by tag
+          while IFS= read -r line; do
+            if echo "$line" | grep -q "tags:"; then
+              in_tags=1
+            elif echo "$line" | grep -q "name:"; then
+              in_tags=0
+            fi
+          done < test-runner.yml
+          
+          # Simplified: just set to run all tests with the tag filter
+          echo "ts-files=**/*.spec.ts" >> $GITHUB_OUTPUT
+          echo "js-files=**/*.spec.js" >> $GITHUB_OUTPUT
+          echo "csharp-files=**/*.cs" >> $GITHUB_OUTPUT
+
+  ts-tests:
+    name: TS Playwright Tests (${{ env.TAG }})
+    needs: parse-runner
+    if: ${{ github.event.inputs.framework == 'all' || github.event.inputs.framework == 'ts' || github.event.inputs.framework == '' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium]
+    
+    defaults:
+      run:
+        working-directory: multiStructure/frameworks/ts-playwright
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      
+      - run: npm ci
+      
+      - name: Install Allure Reporter
+        run: npm install -D allure-playwright
+      
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      
+      - name: Run Tests with Tag Filter
+        run: |
+          # Use Playwright grep to filter by tag
+          npx playwright test --project=${{ matrix.browser }} --grep "@${{ env.TAG }}"
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+      
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ts-report-${{ env.TAG }}-${{ matrix.browser }}
+          path: multiStructure/frameworks/ts-playwright/playwright-report/
+
+  js-tests:
+    name: JS Playwright Tests (${{ env.TAG }})
+    needs: parse-runner
+    if: ${{ github.event.inputs.framework == 'all' || github.event.inputs.framework == 'js' || github.event.inputs.framework == '' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium]
+    
+    defaults:
+      run:
+        working-directory: multiStructure/frameworks/js-playwright
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      
+      - run: npm ci
+      
+      - name: Install Allure Reporter
+        run: npm install -D allure-playwright
+      
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      
+      - name: Run Tests with Tag Filter
+        run: |
+          npx playwright test --project=${{ matrix.browser }} --grep "@${{ env.TAG }}"
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+      
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: js-report-${{ env.TAG }}-${{ matrix.browser }}
+          path: multiStructure/frameworks/js-playwright/playwright-report/
+
+  csharp-tests:
+    name: C# Playwright Tests (${{ env.TAG }})
+    needs: parse-runner
+    if: ${{ github.event.inputs.framework == 'all' || github.event.inputs.framework == 'csharp' || github.event.inputs.framework == '' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium]
+    
+    defaults:
+      run:
+        working-directory: multiStructure/frameworks/csharp-playwright
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      
+      - run: dotnet restore
+      
+      - run: dotnet build
+      
+      - name: Install Playwright
+        run: pwsh bin/Debug/net8.0/playwright.ps1 install ${{ matrix.browser }}
+      
+      - name: Run Tests with Tag Filter
+        run: |
+          # NUnit Category filter matches the tag
+          dotnet test --filter "Category=${{ env.TAG }}&BrowserName=${{ matrix.browser }}"
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+      
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: csharp-report-${{ env.TAG }}-${{ matrix.browser }}
+          path: multiStructure/frameworks/csharp-playwright/TestResults/
+
+  notify:
+    name: Notify Results
+    needs: [ts-tests, js-tests, csharp-tests]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Success
+        if: ${{ success() }}
+        run: echo "✅ All '${{ env.TAG }}' tests passed in ${{ env.ENV }} environment!"
+      
+      - name: Failure
+        if: ${{ failure() }}
+        run: echo "❌ Some '${{ env.TAG }}' tests failed. Check artifacts."

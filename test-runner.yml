@@ -1,0 +1,79 @@
+# Test Runner Configuration
+# This file controls test execution across all frameworks (TS/JS/C#)
+# Use tags to filter tests in GitHub Actions pipeline
+
+version: "1.0"
+
+# Test modules with tags
+modules:
+  - name: "authentication"
+    tags: ["smoke", "regression"]
+    description: "Login and authentication tests"
+    frameworks:
+      ts: "tests/auth/*.spec.ts"
+      js: "tests/auth/*.spec.js"
+      csharp: "Tests/AuthTests.cs"
+
+  - name: "checkout"
+    tags: ["regression", "critical"]
+    description: "Shopping cart and checkout flow"
+    frameworks:
+      ts: "tests/checkout/*.spec.ts"
+      js: "tests/checkout/*.spec.js"
+      csharp: "Tests/ProgramTests.cs"
+
+  - name: "products"
+    tags: ["smoke", "regression"]
+    description: "Product listing and search"
+    frameworks:
+      ts: "tests/products/*.spec.ts"
+      js: "tests/products/*.spec.js"
+      csharp: "Tests/ProductTests.cs"
+
+  - name: "cart"
+    tags: ["regression"]
+    description: "Cart management tests"
+    frameworks:
+      ts: "tests/cart/*.spec.ts"
+      js: "tests/cart/*.spec.js"
+      csharp: "Tests/CartTests.cs"
+
+# Tag definitions for pipeline filtering
+tags:
+  smoke:
+    description: "Quick smoke tests - runs on every commit"
+    schedule: "*/15 * * * *"  # Every 15 minutes
+    timeout: 10
+    
+  regression:
+    description: "Full regression suite - runs nightly"
+    schedule: "0 2 * * *"  # Daily at 2 AM
+    timeout: 60
+    
+  critical:
+    description: "Critical path tests - runs on PR"
+    schedule: "0 * * * *"  # Every hour
+    timeout: 30
+
+# Framework-specific settings
+frameworks:
+  typescript:
+    working-directory: "multiStructure/frameworks/ts-playwright"
+    command: "npx playwright test"
+    filter-flag: "--grep"
+    
+  javascript:
+    working-directory: "multiStructure/frameworks/js-playwright"
+    command: "npx playwright test"
+    filter-flag: "--grep"
+    
+  csharp:
+    working-directory: "multiStructure/frameworks/csharp-playwright"
+    command: "dotnet test"
+    filter-flag: "--filter"
+
+# Pipeline settings
+pipeline:
+  default-environment: "qa"
+  parallel: true
+  retry-on-fail: 2

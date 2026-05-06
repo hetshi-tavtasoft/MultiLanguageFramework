@@ -11,11 +11,14 @@
     <PackageReference Include="Bogus" Version="35.6.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="Microsoft.Playwright.NUnit" Version="1.59.0" />
-    <PackageReference Include="NUnit" Version="4.3.2" />
+    <!-- Allure.NUnit 2.x requires NUnit 3.x - do not upgrade to NUnit 4.x -->
+    <PackageReference Include="NUnit" Version="3.14.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
+    <PackageReference Include="Allure.NUnit" Version="2.*" />
+    <PackageReference Include="Allure.Net.Commons" Version="2.*" />
   </ItemGroup>
 
   <ItemGroup>

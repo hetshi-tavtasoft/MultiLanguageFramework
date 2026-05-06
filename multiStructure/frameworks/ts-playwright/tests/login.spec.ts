@@ -5,7 +5,7 @@ import { userData } from '../utils/dataFactory/userData';
 
 test.describe('e2e Flow', () => {
 
-  test('Completed e2e flow which contains login to order shipped', async ({ loginPage, productPage, yourCartPage, checkoutInformationPage, checkoutOverviewPage, checkoutCompletePage }) => {
+  test('@regression @critical Completed e2e flow which contains login to order shipped', async ({ loginPage, productPage, yourCartPage, checkoutInformationPage, checkoutOverviewPage, checkoutCompletePage }) => {
 
     console.log("Navigate and Verify that user is navigated to Swag labs dashboard");
     await loginPage.navigate();
