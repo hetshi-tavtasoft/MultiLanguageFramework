@@ -38,21 +38,18 @@ modules:
       js: "tests/cart/*.spec.js"
       csharp: "Tests/CartTests.cs"
 
-# Tag definitions for pipeline filtering
+# Tag definitions for manual pipeline filtering
 tags:
   smoke:
-    description: "Quick smoke tests - runs on every commit"
-    schedule: "*/15 * * * *"  # Every 15 minutes
+    description: "Quick smoke tests"
     timeout: 10
     
   regression:
-    description: "Full regression suite - runs nightly"
-    schedule: "0 2 * * *"  # Daily at 2 AM
+    description: "Full regression suite"
     timeout: 60
     
   critical:
-    description: "Critical path tests - runs on PR"
-    schedule: "0 * * * *"  # Every hour
+    description: "Critical path tests"
     timeout: 30
 
 # Framework-specific settings

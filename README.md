@@ -103,19 +103,20 @@ Runs on:
 
 **Jobs:** ts-tests | js-tests | csharp-tests (all parallel on ubuntu-latest with Chromium)
 
-### scheduled-tests.yml (Tag-Based Scheduled Runs)
-Runs automatically based on tags defined in `test-runner.yml`:
-
-| Tag | Schedule | Description |
-|-----|----------|-------------|
-| `@smoke` | Every 15 min | Quick smoke tests |
-| `@critical` | Every hour | Critical path tests |
-| `@regression` | Daily 2 AM | Full regression suite |
+### scheduled-tests.yml (Tag-Based Manual Runs)
+Runs manually using tags defined in `test-runner.yml`:
 
 **Manual Dispatch Options:**
 - Select tag: smoke / regression / critical
 - Select environment: qa / uat / prod
 - Select framework: all / ts / js / csharp
+
+**Tags:**
+| Tag | Description |
+|-----|-------------|
+| `@smoke` | Quick smoke tests |
+| `@critical` | Critical path tests |
+| `@regression` | Full regression suite |
 
 ### Adding New Tests
 

@@ -1,25 +1,6 @@
-name: Scheduled & Tag-Based Test Runs
+name: Tag-Based Test Runs
 
 on:
-  schedule:
-    # Smoke tests - every 15 minutes
-    - cron: "*/15 * * * *"
-      env:
-        TAG: "smoke"
-        ENV: "qa"
-    
-    # Critical tests - every hour
-    - cron: "0 * * * *"
-      env:
-        TAG: "critical"
-        ENV: "qa"
-    
-    # Regression - daily at 2 AM
-    - cron: "0 2 * * *"
-      env:
-        TAG: "regression"
-        ENV: "qa"
-  
   workflow_dispatch:
     inputs:
       tag:
