@@ -17,6 +17,10 @@ on:
           - uat
           - prod
 
+concurrency: 
+group: multi-framework 
+cancel-in-progress: true
+
 env:
   ENV: ${{ github.event.inputs.environment || 'qa' }}
 
