@@ -1,172 +1,232 @@
-# Playwright Multi-Structure Framework
+# Multi-Language Playwright Framework
 
-A cross-language Playwright test automation framework supporting **TypeScript**, **JavaScript**, and **C#** with Allure reporting.
+A multi-structure automation testing repository containing Playwright-based frameworks across multiple programming languages. Each framework is independent and follows the same architectural patterns while using language-specific conventions.
 
-## Project Structure
+## Repository Structure
 
 ```
-Playwright_Multi_Structure_Framework/
-├── multiStructure/
-│   └── frameworks/
-│       ├── ts-playwright/      # TypeScript Playwright tests
-│       ├── js-playwright/      # JavaScript Playwright tests
-│       └── csharp-playwright/ # C# (.NET 8) Playwright tests
-└── .github/
-    └── workflows/
-        └── playwright-ci.yml   # CI pipeline
+multiStructure/
+├── README.md                           # This file
+├── .gitignore                          # Root gitignore
+├── core/                               # Shared resources across frameworks
+│   ├── api-clients/                    # Reusable API client implementations
+│   ├── config/                         # Shared configuration templates
+│   ├── test-data/                      # Common test data files
+│   └── utils/                          # Cross-framework utility scripts
+├── docs/                               # Documentation and guides
+├── infra/                              # Infrastructure and deployment
+│   ├── ci-cd/                          # CI/CD pipeline configurations
+│   └── docker/                         # Docker configurations
+└── frameworks/                         # Individual test frameworks
+    ├── ts-playwright/                  # TypeScript + Playwright + NUnit-style
+    ├── js-playwright/                  # JavaScript + Playwright (CommonJS)
+    └── csharp-playwright/              # C# (.NET 8) + Playwright.NUnit
 ```
 
-## Prerequisites
+---
 
-- **Node.js** 18+ (for TS/JS frameworks)
-- **.NET 8 SDK** (for C# framework)
-- **Playwright browsers** (Chromium)
+## Frameworks Overview
 
-## Setup
+| Framework | Language | Test Runner | Config System | Package Manager |
+|-----------|----------|-------------|---------------|-----------------|
+| `ts-playwright` | TypeScript | `@playwright/test` | dotenv (`.env.{env}`) | npm |
+| `js-playwright` | JavaScript (CommonJS) | `@playwright/test` | dotenv (`.env.{env}`) | npm |
+| `csharp-playwright` | C# (.NET 8) | `Microsoft.Playwright.NUnit` | `appsettings.{env}.json` | NuGet (dotnet) |
 
-### TypeScript / JavaScript Frameworks
+---
+
+## Individual Framework Structure
+
+### ts-playwright
+
+```
+ts-playwright/
+├── package.json                      # npm dependencies & scripts
+├── tsconfig.json                     # TypeScript configuration
+├── .gitignore
+├── .github/
+│   └── workflows/
+│       └── playwright.yml            # GitHub Actions CI pipeline
+├── config/
+│   ├── playwright.config.ts          # Playwright runner config
+│   ├── .env.qa                       # QA environment variables
+│   └── .env.uat                      # UAT environment variables
+├── fixtures/
+│   └── base.fixture.ts               # Custom test fixture (extends base test)
+├── pages/
+│   └── login.page.ts                 # Page Object Model - Login page
+├── tests/
+│   ├── example.spec.ts               # Example Playwright tests
+│   └── login.spec.ts                 # Login test using POM + fixture
+├── utils/                            # Utility helpers (extendable)
+├── test-data/                        # JSON test data files (extendable)
+├── reports/                          # Test reports (gitignored)
+├── test-results/                     # Test results (gitignored)
+└── frameworks/                       # Cross-framework references
+```
+
+### js-playwright
+
+```
+js-playwright/
+├── package.json                      # npm dependencies & scripts
+├── .gitignore
+├── .github/
+│   └── workflows/
+│       └── playwright.yml            # GitHub Actions CI pipeline
+├── config/
+│   ├── playwright.config.js          # Playwright runner config (CommonJS)
+│   ├── .env.qa                       # QA environment variables
+│   └── .env.uat                      # UAT environment variables
+├── fixtures/
+│   └── base.fixture.js               # Custom test fixture (CommonJS exports)
+├── pages/
+│   └── login.page.js                 # Page Object Model - Login page
+├── tests/
+│   ├── example.spec.js               # Example Playwright tests
+│   └── login.spec.js                 # Login test using POM + fixture
+├── utils/                            # Utility helpers (extendable)
+└── test-data/                        # JSON test data files (extendable)
+```
+
+### csharp-playwright
+
+```
+csharp-playwright/
+├── csharp-playwright.csproj          # .NET 8 project file & NuGet packages
+├── csharp-playwright.sln             # Visual Studio solution file
+├── .gitignore
+├── .github/
+│   └── workflows/
+│       └── playwright.yml            # GitHub Actions CI pipeline
+├── Config/
+│   └── *(configuration handled via appsettings files at root)*
+├── Fixtures/
+│   └── BaseTest.cs                   # Base test class with configuration loading
+├── Pages/
+│   └── LoginPage.cs                  # Page Object Model - Login page
+├── Tests/
+│   ├── ExampleTests.cs               # Example Playwright tests
+│   └── LoginTests.cs                 # Login test using POM + base fixture
+├── Utils/                            # Utility helpers (extendable)
+├── TestData/                         # Test data files (extendable)
+├── appsettings.json                  # Default configuration
+├── appsettings.qa.json               # QA environment configuration
+└── appsettings.uat.json              # UAT environment configuration
+```
+
+---
+
+## Framework Architecture Pattern
+
+All three frameworks follow the same core architectural pattern:
+
+```
+┌─────────────────────────┐
+│   CI/CD Pipeline        │   (.github/workflows/playwright.yml)
+│   GitHub Actions        │
+└────────────┬────────────┘
+             │
+┌────────────▼────────────┐
+│   Configuration Layer   │   (playwright.config / appsettings + env files)
+│   Env-Driven Config     │
+└────────────┬────────────┘
+             │
+    ┌────────┼────────┐
+    │        │        │
+┌───▼──┐ ┌───▼────┐ ┌─▼─────┐
+│Fixture│ │ Pages  │ │ Utils │
+│(Base) │ │ (POM)  │ │ (TBD) │
+└───┬───┘ └───┬────┘ └───────┘
+    │         │
+    └────┬────┘
+         │
+┌────────▼────────────┐
+│   Tests (.spec)     │   (Test specs using fixtures + page objects)
+└─────────────────────┘
+```
+
+### Key Components
+
+| Component | Purpose |
+|-----------|---------|
+| **Configuration** | Environment-driven config (QA/UAT) via dotenv (JS/TS) or appsettings (C#) |
+| **Base Fixture** | Extends the base test runner; single import point for all tests |
+| **Page Objects** | Class-based POM with locators as properties and async action methods |
+| **Tests** | Spec files using custom fixtures and page objects |
+| **CI/CD** | GitHub Actions workflows for automated test execution |
+
+---
+
+## Quick Start
+
+### ts-playwright
 
 ```bash
-cd multiStructure/frameworks/ts-playwright   # or js-playwright
-npm ci
-npx playwright install chromium
+cd frameworks/ts-playwright
+npm install
+npx playwright install --with-deps
+npx playwright test
+```
+
+### js-playwright
+
+```bash
+cd frameworks/js-playwright
+npm install
+npx playwright install --with-deps
+npm test
+```
+
+### csharp-playwright
+
+```bash
+cd frameworks/csharp-playwright
+dotnet restore
+dotnet build
+dotnet test
+```
+
+---
+
+## Environment Configuration
+
+### JS/TS Frameworks
+
+Environment files are located in `config/.env.{environment}`. The `ENV` environment variable selects which file to load (defaults to `qa`):
+
+```bash
+ENV=qa npx playwright test
+ENV=uat npx playwright test
 ```
 
 ### C# Framework
 
+Environment files are `appsettings.{environment}.json`. The `ENV` environment variable selects which file to overlay on the base `appsettings.json`:
+
 ```bash
-cd multiStructure/frameworks/csharp-playwright
-dotnet restore
-dotnet build
-pwsh bin/Debug/net8.0/playwright.ps1 install chromium
+ENV=qa dotnet test
+ENV=uat dotnet test
 ```
 
-## Running Tests
+---
 
-### Using Test Runner (Recommended)
+## npm Scripts (JS/TS Frameworks)
 
-The `test-runner.yml` file controls test execution with tags and scheduling:
+| Script | Command |
+|--------|---------|
+| `npm test` | Run all tests |
+| `npm run test:qa` | Run tests with QA config |
+| `npm run test:uat` | Run tests with UAT config |
+| `npm run test:headed` | Run tests in headed mode |
+| `npm run test:debug` | Run tests in debug mode |
+| `npm run report` | Open HTML test report |
 
-```yaml
-# Run tests by tag
-dotnet test --filter "Category=smoke"        # C# - run smoke tests
-npx playwright test --grep "@smoke"           # TS/JS - run smoke tests
-```
+## dotnet Commands (C# Framework)
 
-**Available Tags:**
-- `@smoke` - Quick smoke tests (runs every 15 min in CI)
-- `@regression` - Full regression suite (runs daily at 2 AM)
-- `@critical` - Critical path tests (runs every hour)
-
-### TypeScript
-```bash
-cd multiStructure/frameworks/ts-playwright
-npx playwright test --project=chromium
-npx playwright test --grep "@smoke"              # Run only smoke tests
-```
-
-### JavaScript
-```bash
-cd multiStructure/frameworks/js-playwright
-npx playwright test --project=chromium
-npx playwright test --grep "@regression"         # Run only regression tests
-```
-
-### C# (.NET)
-```bash
-cd multiStructure/frameworks/csharp-playwright
-dotnet test --filter "BrowserName=chromium"
-dotnet test --filter "Category=smoke"           # Run only smoke tests
-```
-
-## Environment Configuration
-
-Each framework supports multiple environments via `appsettings.{env}.json`:
-- `appsettings.qa.json`
-- `appsettings.uat.json`
-- `appsettings.prod.json`
-
-Set environment variables:
-```
-BASE_URL=https://your-url.com
-USERNAME=your_username
-PASSWORD=your_password
-```
-
-## CI/CD Pipeline
-
-### playwright-ci.yml (Main Pipeline)
-Runs on:
-- Push to `main` branch
-- Pull requests to `main`
-- Manual dispatch (select environment: qa/uat/prod)
-
-**Jobs:** ts-tests | js-tests | csharp-tests (all parallel on ubuntu-latest with Chromium)
-
-### scheduled-tests.yml (Tag-Based Manual Runs)
-Runs manually using tags defined in `test-runner.yml`:
-
-**Manual Dispatch Options:**
-- Select tag: smoke / regression / critical
-- Select environment: qa / uat / prod
-- Select framework: all / ts / js / csharp
-
-**Tags:**
-| Tag | Description |
-|-----|-------------|
-| `@smoke` | Quick smoke tests |
-| `@critical` | Critical path tests |
-| `@regression` | Full regression suite |
-
-### Adding New Tests
-
-1. Create test file in appropriate framework directory
-2. Add entry in `test-runner.yml` under `modules:`
-3. Tag your tests:
-   - **C#**: `[Category("smoke")]`
-   - **TS/JS**: `test('@smoke Your test', async () => {})`
-4. Push to trigger pipeline or manually dispatch from GitHub Actions
-
-## Allure Reporting (C#)
-
-C# framework uses **Allure.NUnit 2.x** for test reporting.
-
-**Important**: Uses **NUnit 3.14.0** (Allure.NUnit 2.x is not compatible with NUnit 4.x).
-
-Generate Allure report:
-```bash
-cd multiStructure/frameworks/csharp-playwright
-allure generate bin/Debug/net8.0/allure-results -o allure-report --clean
-allure open allure-report
-```
-
-## Test Scenarios
-
-All frameworks implement the same Swag Labs test scenarios:
-1. Navigate and verify dashboard
-2. Login with valid credentials
-3. Add cheapest product to cart
-4. Verify cart contents
-5. Complete checkout flow
-
-## Secrets (GitHub Actions)
-
-Configure in repository settings:
-- `BASE_URL` - Target application URL
-- `USERNAME` - Test user username
-- `PASSWORD` - Test user password
-
-## Troubleshooting
-
-### C# Allure Not Generating Results
-- Verify NUnit version is 3.14.0 (not 4.x)
-- Ensure `[AllureNUnit]` attribute is on test classes
-- Check `allureConfig.json` exists in project root
-- Results generate in `bin/Debug/net8.0/allure-results/`
-
-### Playwright Browser Issues
-```bash
-npx playwright install --with-deps chromium
-# or for C#
-pwsh bin/Debug/net8.0/playwright.ps1 install chromium
-```
+| Command | Description |
+|---------|-------------|
+| `dotnet restore` | Restore NuGet packages |
+| `dotnet build` | Build the project |
+| `dotnet test` | Run all tests |
+| `dotnet test --filter "Name~Login"` | Run specific tests |

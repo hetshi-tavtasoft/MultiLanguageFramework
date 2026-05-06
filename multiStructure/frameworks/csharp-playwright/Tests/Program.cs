@@ -51,10 +51,20 @@ public class ProgramTests
     [Category("regression")]
     public async Task NavigateAndVerifySwagLabsDashboard()
     {
-        var loginPage = new LoginPage(_page!);
-        await loginPage.NavigateAsync();
-        var headerText = await loginPage.GetTitleTextAsync();
-        Assert.That(headerText, Does.Contain(ConstantData.Data.DashboardTitle));
+        try
+        {
+            var loginPage = new LoginPage(_page!);
+            await loginPage.NavigateAsync();
+            var headerText = await loginPage.GetTitleTextAsync();
+            Assert.That(headerText, Does.Contain(ConstantData.Data.DashboardTitle));
+        }
+        catch (Exception ex)
+        {
+            await _page!.ScreenshotAsync(new PageScreenshotOptions { Path = $"screenshots/{TestContext.CurrentContext.Test.Name}-fail.png" });
+            TestContext.WriteLine($"Exception: {ex.Message}");
+            TestContext.WriteLine($"Stack Trace: {ex.StackTrace}");
+            throw;
+        }
     }
 
     [Test]
@@ -62,49 +72,79 @@ public class ProgramTests
     [Category("regression")]
     public async Task LoginToSwagLabsWithValidCredentials()
     {
-        var loginPage = new LoginPage(_page!);
-        var productPage = new ProductPage(_page!);
+        try
+        {
+            var loginPage = new LoginPage(_page!);
+            var productPage = new ProductPage(_page!);
 
-        await loginPage.NavigateAsync();
-        await loginPage.LoginToSwagLabsAsync(TestData.User.Username, TestData.User.Password);
+            await loginPage.NavigateAsync();
+            await loginPage.LoginToSwagLabsAsync(TestData.User.Username, TestData.User.Password);
 
-        var productTitle = await productPage.GetTitleTextAsync();
-        Assert.That(productTitle, Does.Contain(ConstantData.Data.ProductTitle));
+            var productTitle = await productPage.GetTitleTextAsync();
+            Assert.That(productTitle, Does.Contain(ConstantData.Data.ProductTitle));
+        }
+        catch (Exception ex)
+        {
+            await _page!.ScreenshotAsync(new PageScreenshotOptions { Path = $"screenshots/{TestContext.CurrentContext.Test.Name}-fail.png" });
+            TestContext.WriteLine($"Exception: {ex.Message}");
+            TestContext.WriteLine($"Stack Trace: {ex.StackTrace}");
+            throw;
+        }
     }
 
     [Test]
     [Category("regression")]
     public async Task AddCheapestProductToCart()
     {
-        var loginPage = new LoginPage(_page!);
-        var productPage = new ProductPage(_page!);
+        try
+        {
+            var loginPage = new LoginPage(_page!);
+            var productPage = new ProductPage(_page!);
 
-        await loginPage.NavigateAsync();
-        await loginPage.LoginToSwagLabsAsync(TestData.User.Username, TestData.User.Password);
-        await productPage.ClickOnSortingContainerAsync();
-        await productPage.SelectSortingOptionAsync(ConstantData.Data.SortHighToLowOption);
-        var cheapestPrice = await productPage.GetPriceAndClickOnAddToCartButtonAsync();
+            await loginPage.NavigateAsync();
+            await loginPage.LoginToSwagLabsAsync(TestData.User.Username, TestData.User.Password);
+            await productPage.ClickOnSortingContainerAsync();
+            await productPage.SelectSortingOptionAsync(ConstantData.Data.SortHighToLowOption);
+            var cheapestPrice = await productPage.GetPriceAndClickOnAddToCartButtonAsync();
 
-        Assert.That(cheapestPrice, Is.GreaterThan(0));
+            Assert.That(cheapestPrice, Is.GreaterThan(0));
+        }
+        catch (Exception ex)
+        {
+            await _page!.ScreenshotAsync(new PageScreenshotOptions { Path = $"screenshots/{TestContext.CurrentContext.Test.Name}-fail.png" });
+            TestContext.WriteLine($"Exception: {ex.Message}");
+            TestContext.WriteLine($"Stack Trace: {ex.StackTrace}");
+            throw;
+        }
     }
 
     [Test]
     [Category("regression")]
     public async Task VerifyCartContainsCheapestProduct()
     {
-        var loginPage = new LoginPage(_page!);
-        var productPage = new ProductPage(_page!);
-        var yourCartPage = new YourCartPage(_page!);
+        try
+        {
+            var loginPage = new LoginPage(_page!);
+            var productPage = new ProductPage(_page!);
+            var yourCartPage = new YourCartPage(_page!);
 
-        await loginPage.NavigateAsync();
-        await loginPage.LoginToSwagLabsAsync(TestData.User.Username, TestData.User.Password);
-        await productPage.ClickOnSortingContainerAsync();
-        await productPage.SelectSortingOptionAsync(ConstantData.Data.SortHighToLowOption);
-        var cheapestPrice = await productPage.GetPriceAndClickOnAddToCartButtonAsync();
-        await productPage.ClickOnCartContainerAsync();
+            await loginPage.NavigateAsync();
+            await loginPage.LoginToSwagLabsAsync(TestData.User.Username, TestData.User.Password);
+            await productPage.ClickOnSortingContainerAsync();
+            await productPage.SelectSortingOptionAsync(ConstantData.Data.SortHighToLowOption);
+            var cheapestPrice = await productPage.GetPriceAndClickOnAddToCartButtonAsync();
+            await productPage.ClickOnCartContainerAsync();
 
-        var cartPrice = await yourCartPage.GetPriceAsync();
-        Assert.That(cartPrice, Is.EqualTo(cheapestPrice));
+            var cartPrice = await yourCartPage.GetPriceAsync();
+            Assert.That(cartPrice, Is.EqualTo(cheapestPrice));
+        }
+        catch (Exception ex)
+        {
+            await _page!.ScreenshotAsync(new PageScreenshotOptions { Path = $"screenshots/{TestContext.CurrentContext.Test.Name}-fail.png" });
+            TestContext.WriteLine($"Exception: {ex.Message}");
+            TestContext.WriteLine($"Stack Trace: {ex.StackTrace}");
+            throw;
+        }
     }
 
     [Test]
@@ -112,30 +152,40 @@ public class ProgramTests
     [Category("critical")]
     public async Task CompleteCheckoutFlow()
     {
-        var loginPage = new LoginPage(_page!);
-        var productPage = new ProductPage(_page!);
-        var yourCartPage = new YourCartPage(_page!);
-        var checkoutInformationPage = new CheckoutInformationPage(_page!);
-        var checkoutOverviewPage = new CheckoutOverviewPage(_page!);
-        var checkoutCompletePage = new CheckoutCompletePage(_page!);
+        try
+        {
+            var loginPage = new LoginPage(_page!);
+            var productPage = new ProductPage(_page!);
+            var yourCartPage = new YourCartPage(_page!);
+            var checkoutInformationPage = new CheckoutInformationPage(_page!);
+            var checkoutOverviewPage = new CheckoutOverviewPage(_page!);
+            var checkoutCompletePage = new CheckoutCompletePage(_page!);
 
-        await loginPage.NavigateAsync();
-        await loginPage.LoginToSwagLabsAsync(TestData.User.Username, TestData.User.Password);
-        await productPage.ClickOnSortingContainerAsync();
-        await productPage.SelectSortingOptionAsync(ConstantData.Data.SortHighToLowOption);
-        var cheapestPrice = await productPage.GetPriceAndClickOnAddToCartButtonAsync();
-        await productPage.ClickOnCartContainerAsync();
+            await loginPage.NavigateAsync();
+            await loginPage.LoginToSwagLabsAsync(TestData.User.Username, TestData.User.Password);
+            await productPage.ClickOnSortingContainerAsync();
+            await productPage.SelectSortingOptionAsync(ConstantData.Data.SortHighToLowOption);
+            var cheapestPrice = await productPage.GetPriceAndClickOnAddToCartButtonAsync();
+            await productPage.ClickOnCartContainerAsync();
 
-        await yourCartPage.ClickOnCheckoutButtonAsync();
-        await checkoutInformationPage.EnterDetailsAsync(UserData.Generate());
-        await checkoutInformationPage.ClickOnContinueButtonAsync();
+            await yourCartPage.ClickOnCheckoutButtonAsync();
+            await checkoutInformationPage.EnterDetailsAsync(UserData.Generate());
+            await checkoutInformationPage.ClickOnContinueButtonAsync();
 
-        var currentProductPrice = await checkoutOverviewPage.GetProductPriceAsync();
-        Assert.That(currentProductPrice, Is.EqualTo(cheapestPrice));
+            var currentProductPrice = await checkoutOverviewPage.GetProductPriceAsync();
+            Assert.That(currentProductPrice, Is.EqualTo(cheapestPrice));
 
-        await checkoutOverviewPage.ClickOnFinishButtonAsync();
+            await checkoutOverviewPage.ClickOnFinishButtonAsync();
 
-        var successHeader = await checkoutCompletePage.GetTitleTextAsync();
-        Assert.That(successHeader, Is.EqualTo(ConstantData.Data.CheckoutSuccessHeader));
+            var successHeader = await checkoutCompletePage.GetTitleTextAsync();
+            Assert.That(successHeader, Is.EqualTo(ConstantData.Data.CheckoutSuccessHeader));
+        }
+        catch (Exception ex)
+        {
+            await _page!.ScreenshotAsync(new PageScreenshotOptions { Path = $"screenshots/{TestContext.CurrentContext.Test.Name}-fail.png" });
+            TestContext.WriteLine($"Exception: {ex.Message}");
+            TestContext.WriteLine($"Stack Trace: {ex.StackTrace}");
+            throw;
+        }
     }
 }
