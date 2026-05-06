@@ -6,7 +6,7 @@ module.exports = defineConfig({
   retries: 1,
   use: {
     baseURL: process.env.BASE_URL || 'https://www.saucedemo.com',
-    headless: process.env.HEADED ? false : true,
+    headless: process.env.HEADED ? true : false,
   },
   reporter: [
     ['list'],
