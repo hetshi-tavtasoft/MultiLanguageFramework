@@ -12,7 +12,7 @@ using PlaywrightFramework.Utils.DataFactory;
 namespace PlaywrightFramework.Tests;
 
 [AllureNUnit]
-public class ProgramTests
+public class LoginWithValidCredentails
 {
     private IPlaywright? _playwright;
     private IBrowser? _browser;
@@ -49,14 +49,18 @@ public class ProgramTests
     [Test]
     [Category("smoke")]
     [Category("regression")]
-    public async Task NavigateAndVerifySwagLabsDashboard()
+    public async Task LoginToSwagLabsWithValidCredentials()
     {
         try
         {
             var loginPage = new LoginPage(_page!);
+            var productPage = new ProductPage(_page!);
+
             await loginPage.NavigateAsync();
-            var headerText = await loginPage.GetTitleTextAsync();
-            Assert.That(headerText, Does.Contain(ConstantData.Data.DashboardTitle));
+            await loginPage.LoginToSwagLabsAsync(TestData.User.Username, TestData.User.Password);
+
+            var productTitle = await productPage.GetTitleTextAsync();
+            Assert.That(productTitle, Does.Contain(ConstantData.Data.ProductTitle));
         }
         catch (Exception ex)
         {

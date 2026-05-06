@@ -12,7 +12,7 @@ using PlaywrightFramework.Utils.DataFactory;
 namespace PlaywrightFramework.Tests;
 
 [AllureNUnit]
-public class ProgramTests
+public class  CartContainsCheapestProduct
 {
     private IPlaywright? _playwright;
     private IBrowser? _browser;
@@ -47,16 +47,24 @@ public class ProgramTests
     }
 
     [Test]
-    [Category("smoke")]
     [Category("regression")]
-    public async Task NavigateAndVerifySwagLabsDashboard()
+    public async Task VerifyCartContainsCheapestProduct()
     {
         try
         {
             var loginPage = new LoginPage(_page!);
+            var productPage = new ProductPage(_page!);
+            var yourCartPage = new YourCartPage(_page!);
+
             await loginPage.NavigateAsync();
-            var headerText = await loginPage.GetTitleTextAsync();
-            Assert.That(headerText, Does.Contain(ConstantData.Data.DashboardTitle));
+            await loginPage.LoginToSwagLabsAsync(TestData.User.Username, TestData.User.Password);
+            await productPage.ClickOnSortingContainerAsync();
+            await productPage.SelectSortingOptionAsync(ConstantData.Data.SortHighToLowOption);
+            var cheapestPrice = await productPage.GetPriceAndClickOnAddToCartButtonAsync();
+            await productPage.ClickOnCartContainerAsync();
+
+            var cartPrice = await yourCartPage.GetPriceAsync();
+            Assert.That(cartPrice, Is.EqualTo(cheapestPrice));
         }
         catch (Exception ex)
         {
@@ -66,5 +74,4 @@ public class ProgramTests
             throw;
         }
     }
-
 }
