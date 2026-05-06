@@ -28,10 +28,11 @@ public class ProgramTests
     public async Task SetUp()
     {
         _playwright = await Microsoft.Playwright.Playwright.CreateAsync();
+        var isWindows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+            System.Runtime.InteropServices.OSPlatform.Windows);
         _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
-            ExecutablePath = @"C:\Users\pct113\AppData\Local\ms-playwright\chromium-1217\chrome-win64\chrome.exe",
-            Channel = "chrome",
+            Channel = isWindows ? "chrome" : "chromium",
             Headless = false
         });
 
