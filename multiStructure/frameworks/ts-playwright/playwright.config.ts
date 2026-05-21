@@ -6,7 +6,7 @@ export default defineConfig({
   retries: 1,
   use: {
     baseURL: process.env.BASE_URL || 'https://www.saucedemo.com',
-    headless: false,
+    headless: !!process.env.CI,
   },
   reporter: [
     ['list'],
