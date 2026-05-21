@@ -6,7 +6,7 @@ export default defineConfig({
   retries: 1,
   use: {
     baseURL: process.env.BASE_URL || 'https://www.saucedemo.com',
-    headless: process.env.HEADED ? false : true,
+    headless: false,
   },
   reporter: [
     ['list'],
@@ -20,14 +20,6 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { browserName: 'chromium' },
-    },
-    {
-      name: 'firefox',
-      use: { browserName: 'firefox' },
-    },
-    {
-      name: 'webkit',
-      use: { browserName: 'webkit' },
     },
   ],
 });
